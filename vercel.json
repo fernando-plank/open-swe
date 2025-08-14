@@ -1,0 +1,96 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "version": 2,
+  "name": "open-swe",
+  "buildCommand": "yarn build",
+  "outputDirectory": "apps/web/.next",
+  "installCommand": "yarn install",
+  "framework": "nextjs",
+  "builds": [
+    {
+      "src": "apps/web/package.json",
+      "use": "@vercel/next",
+      "config": {
+        "distDir": ".next"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/health",
+      "dest": "/api/health"
+    },
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/apps/web/$1"
+    }
+  ],
+  "functions": {
+    "apps/web/src/app/api/[..._path]/route.ts": {
+      "maxDuration": 300
+    },
+    "apps/web/src/app/api/health/route.ts": {
+      "maxDuration": 30
+    }
+  },
+  "env": {
+    "NODE_ENV": "production",
+    "NEXT_PUBLIC_API_URL": "@next_public_api_url",
+    "LANGGRAPH_API_URL": "@langgraph_api_url",
+    "GITHUB_APP_CLIENT_ID": "@github_app_client_id",
+    "GITHUB_APP_CLIENT_SECRET": "@github_app_client_secret",
+    "GITHUB_APP_REDIRECT_URI": "@github_app_redirect_uri",
+    "GITHUB_APP_NAME": "@github_app_name",
+    "GITHUB_APP_ID": "@github_app_id",
+    "GITHUB_APP_PRIVATE_KEY": "@github_app_private_key",
+    "SECRETS_ENCRYPTION_KEY": "@secrets_encryption_key"
+  },
+  "build": {
+    "env": {
+      "NODE_ENV": "production"
+    }
+  },
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET, POST, PUT, DELETE, OPTIONS"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "Content-Type, Authorization"
+        }
+      ]
+    },
+    {
+      "source": "/health",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
+        }
+      ]
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/health",
+      "destination": "/api/health"
+    }
+  ],
+  "regions": ["iad1"],
+  "github": {
+    "silent": true
+  },
+  "ignoreCommand": "git log -1 --pretty=oneline --abbrev-commit | grep -w \"\\[skip ci\\]\" && exit 0 || exit 1"
+}
