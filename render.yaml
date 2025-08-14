@@ -1,0 +1,73 @@
+services:
+  - type: web
+    name: open-swe-agent
+    runtime: node
+    plan: starter
+    region: oregon
+    buildCommand: yarn install --frozen-lockfile && yarn build --filter=@open-swe/agent
+    startCommand: yarn workspace @open-swe/agent start
+    healthCheckPath: /health
+    envVars:
+      # LangSmith tracing
+      - key: LANGCHAIN_PROJECT
+        value: production
+      - key: LANGCHAIN_API_KEY
+        sync: false
+      - key: LANGCHAIN_TRACING_V2
+        value: "true"
+      - key: LANGCHAIN_TEST_TRACKING
+        value: "false"
+      
+      # LLM Provider Keys
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: GOOGLE_API_KEY
+        sync: false
+      
+      # Infrastructure
+      - key: DAYTONA_API_KEY
+        sync: false
+      
+      # Tools
+      - key: FIRECRAWL_API_KEY
+        sync: false
+      
+      # GitHub App Secrets
+      - key: GITHUB_APP_NAME
+        sync: false
+      - key: GITHUB_APP_ID
+        sync: false
+      - key: GITHUB_APP_PRIVATE_KEY
+        sync: false
+      - key: GITHUB_WEBHOOK_SECRET
+        sync: false
+      
+      # Other Configuration
+      - key: PORT
+        value: "10000"
+      - key: OPEN_SWE_APP_URL
+        sync: false
+      - key: SECRETS_ENCRYPTION_KEY
+        sync: false
+      - key: SKIP_CI_UNTIL_LAST_COMMIT
+        value: "true"
+      
+      # Node.js Configuration
+      - key: NODE_VERSION
+        value: "20"
+      - key: NODE_ENV
+        value: production
+    
+    # Auto-deploy configuration
+    autoDeploy: true
+    
+    # Resource configuration
+    numInstances: 1
+    
+    # Disk configuration for temporary files
+    disk:
+      name: open-swe-agent-disk
+      mountPath: /tmp
+      sizeGB: 1
