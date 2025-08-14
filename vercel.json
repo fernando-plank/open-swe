@@ -1,40 +1,30 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "version": 2,
-  "name": "open-swe",
+  "name": "open-swe-web",
   "buildCommand": "yarn build",
   "outputDirectory": "apps/web/.next",
-  "installCommand": "yarn install",
+  "installCommand": "yarn install --frozen-lockfile",
   "framework": "nextjs",
+  "rootDirectory": "apps/web",
   "builds": [
     {
-      "src": "apps/web/package.json",
-      "use": "@vercel/next",
-      "config": {
-        "distDir": ".next"
-      }
-    }
-  ],
-  "routes": [
-    {
-      "src": "/health",
-      "dest": "/api/health"
-    },
-    {
-      "src": "/api/(.*)",
-      "dest": "/api/$1"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/apps/web/$1"
+      "src": "package.json",
+      "use": "@vercel/next"
     }
   ],
   "functions": {
-    "apps/web/src/app/api/[..._path]/route.ts": {
+    "src/app/api/[..._path]/route.ts": {
       "maxDuration": 300
     },
-    "apps/web/src/app/api/health/route.ts": {
+    "src/app/api/health/route.ts": {
       "maxDuration": 30
+    },
+    "src/app/api/auth/*/route.ts": {
+      "maxDuration": 60
+    },
+    "src/app/api/github/*/route.ts": {
+      "maxDuration": 120
     }
   },
   "env": {
@@ -51,7 +41,8 @@
   },
   "build": {
     "env": {
-      "NODE_ENV": "production"
+      "NODE_ENV": "production",
+      "TURBO_TELEMETRY_DISABLED": "1"
     }
   },
   "headers": [
@@ -64,11 +55,15 @@
         },
         {
           "key": "Access-Control-Allow-Methods",
-          "value": "GET, POST, PUT, DELETE, OPTIONS"
+          "value": "GET, POST, PUT, DELETE, OPTIONS, PATCH"
         },
         {
           "key": "Access-Control-Allow-Headers",
-          "value": "Content-Type, Authorization"
+          "value": "Content-Type, Authorization, X-Requested-With"
+        },
+        {
+          "key": "Access-Control-Max-Age",
+          "value": "86400"
         }
       ]
     },
@@ -78,6 +73,14 @@
         {
           "key": "Cache-Control",
           "value": "no-cache, no-store, must-revalidate"
+        },
+        {
+          "key": "Pragma",
+          "value": "no-cache"
+        },
+        {
+          "key": "Expires",
+          "value": "0"
         }
       ]
     }
@@ -92,5 +95,7 @@
   "github": {
     "silent": true
   },
-  "ignoreCommand": "git log -1 --pretty=oneline --abbrev-commit | grep -w \"\\[skip ci\\]\" && exit 0 || exit 1"
+  "ignoreCommand": "git log -1 --pretty=oneline --abbrev-commit | grep -w \"\\[skip ci\\]\" && exit 0 || exit 1",
+  "crons": []
 }
+
