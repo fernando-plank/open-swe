@@ -1,0 +1,29 @@
+FROM node:18-alpine
+
+# Set working directory
+WORKDIR /app
+
+# Install system dependencies and curl for health checks
+RUN apk add --no-cache git curl
+
+# Install LangGraph CLI globally
+RUN npm install -g @langchain/langgraph-cli
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm ci
+
+# Copy source code
+COPY . .
+
+# Expose port (LangGraph dev typically uses 2024, but we'll use Render's 10000)
+EXPOSE 10000
+
+# Health check - adjust path based on your LangGraph setup
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+  CMD curl -f http://localhost:10000/health || exit 1
+
+# Start the application using LangGraph CLI in dev mode (only available command)
+CMD ["langgraph", "dev", "--host", "0.0.0.0", "--port", "10000"]

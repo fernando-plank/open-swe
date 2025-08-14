@@ -1,0 +1,64 @@
+services:
+  - type: web
+    name: open-swe-app
+    env: node
+    region: oregon
+    plan: starter
+    buildCommand: |
+      cd app/open-swe && 
+      npm ci &&
+      npm install -g @langchain/langgraph-cli
+    startCommand: cd app/open-swe && langgraph dev --host 0.0.0.0 --port 10000
+    healthCheckPath: /health
+    envVars:
+      # LangSmith Configuration
+      - key: LANGCHAIN_PROJECT
+        value: default
+      - key: LANGCHAIN_API_KEY
+        fromSecret: langchain_api_key
+      - key: LANGCHAIN_TRACING_V2
+        value: "true"
+      - key: LANGCHAIN_TEST_TRACKING
+        value: "false"
+      
+      # LLM Provider Keys
+      - key: ANTHROPIC_API_KEY
+        fromSecret: anthropic_api_key
+      - key: OPENAI_API_KEY
+        fromSecret: openai_api_key
+      - key: GOOGLE_API_KEY
+        fromSecret: google_api_key
+      
+      # Infrastructure
+      - key: DAYTONA_API_KEY
+        fromSecret: daytona_api_key
+      
+      # Tools
+      - key: FIRECRAWL_API_KEY
+        fromSecret: firecrawl_api_key
+      
+      # GitHub App Configuration
+      - key: GITHUB_APP_NAME
+        value: open-swe-fernando
+      - key: GITHUB_APP_ID
+        fromSecret: github_app_id
+      - key: GITHUB_APP_PRIVATE_KEY
+        fromSecret: github_app_private_key
+      - key: GITHUB_WEBHOOK_SECRET
+        fromSecret: github_webhook_secret
+      
+      # Application Configuration
+      - key: PORT
+        value: "10000"
+      - key: OPEN_SWE_APP_URL
+        value: https://open-swe-ck3o.onrender.com
+      - key: SECRETS_ENCRYPTION_KEY
+        fromSecret: secrets_encryption_key
+      - key: SKIP_CI_UNTIL_LAST_COMMIT
+        value: "true"
+      - key: OPEN_SWE_LOCAL_MODE
+        value: "false"
+      - key: OPEN_SWE_LOCAL_PROJECT_PATH
+        value: ""
+      - key: NODE_ENV
+        value: production
