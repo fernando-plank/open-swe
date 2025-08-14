@@ -2,29 +2,29 @@
 const nextConfig = {
   // Output configuration for Vercel deployment
   output: "standalone",
-  
+
   // Experimental features
   experimental: {
     serverActions: {
       bodySizeLimit: "10mb",
     },
   },
-  
+
   // Build optimizations for production
   compiler: {
     // Remove console.logs in production
     removeConsole: process.env.NODE_ENV === "production",
   },
-  
+
   // Performance optimizations
   poweredByHeader: false,
-  
+
   // Image optimization
   images: {
     formats: ["image/webp", "image/avif"],
     minimumCacheTTL: 60,
   },
-  
+
   // Webpack optimizations
   webpack: (config, { isServer }) => {
     // Optimize bundle size
@@ -36,10 +36,10 @@ const nextConfig = {
         tls: false,
       };
     }
-    
+
     return config;
   },
-  
+
   // Headers for security and performance
   async headers() {
     return [
@@ -65,4 +65,3 @@ const nextConfig = {
 };
 
 export default nextConfig;
-
