@@ -16,9 +16,33 @@ import { encryptSecret } from "@open-swe/shared/crypto";
 // This file acts as a proxy for requests to your LangGraph server.
 // Read the [Going to Production](https://github.com/langchain-ai/agent-chat-ui?tab=readme-ov-file#going-to-production) section for more information.
 
+/**
+ * Get the LangGraph API URL based on deployment environment
+ */
+function getLangGraphApiUrl(): string {
+  const envUrl = process.env.LANGGRAPH_API_URL;
+  const nodeEnv = process.env.NODE_ENV;
+  
+  // If explicitly set, use that URL
+  if (envUrl) {
+    return envUrl;
+  }
+  
+  // Environment-based defaults
+  if (nodeEnv === "production") {
+    // In production, we expect the environment variable to be set
+    // This is a fallback that should not be used in real deployments
+    console.warn("LANGGRAPH_API_URL not set in production environment");
+    return "http://localhost:2024";
+  }
+  
+  // Development default
+  return "http://localhost:2024";
+}
+
 export const { GET, POST, PUT, PATCH, DELETE, OPTIONS, runtime } =
   initApiPassthrough({
-    apiUrl: process.env.LANGGRAPH_API_URL ?? "http://localhost:2024",
+    apiUrl: getLangGraphApiUrl(),
     runtime: "edge", // default
     disableWarningLog: true,
     bodyParameters: (req, body) => {
@@ -77,3 +101,4 @@ export const { GET, POST, PUT, PATCH, DELETE, OPTIONS, runtime } =
       };
     },
   });
+
