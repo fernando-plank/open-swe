@@ -3,8 +3,9 @@
   "name": "open-swe-web",
   "buildCommand": "yarn build --filter=@open-swe/web",
   "outputDirectory": "apps/web/.next",
-  "installCommand": "yarn install",
+  "installCommand": "yarn install --frozen-lockfile",
   "framework": "nextjs",
+  "rootDirectory": "apps/web",
   "functions": {
     "apps/web/src/app/api/**/*.ts": {
       "maxDuration": 30
@@ -23,9 +24,12 @@
   },
   "build": {
     "env": {
-      "NODE_VERSION": "20"
+      "NODE_VERSION": "20",
+      "YARN_ENABLE_IMMUTABLE_INSTALLS": "false"
     }
   },
-  "regions": ["iad1"]
+  "regions": ["iad1"],
+  "ignoreCommand": "git diff --quiet HEAD^ HEAD ./apps/web"
 }
+
 
