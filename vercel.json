@@ -5,9 +5,8 @@
   "outputDirectory": "apps/web/.next",
   "installCommand": "yarn install --frozen-lockfile",
   "framework": "nextjs",
-  "rootDirectory": "apps/web",
   "functions": {
-    "apps/web/src/app/api/**/*.ts": {
+    "src/app/api/**/*.ts": {
       "maxDuration": 30
     }
   },
@@ -31,5 +30,6 @@
   "regions": ["iad1"],
   "ignoreCommand": "git diff --quiet HEAD^ HEAD ./apps/web"
 }
+
 
 
