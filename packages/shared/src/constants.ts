@@ -1,4 +1,9 @@
-export const TIMEOUT_SEC = 60; // 1 minute
+// Timeout configurations optimized for cloud deployments
+// Cloud platforms often have higher network latencies and may require longer timeouts
+export const TIMEOUT_SEC = 120; // 2 minutes - increased for cloud deployments
+export const CLOUD_TIMEOUT_SEC = 180; // 3 minutes - for operations that may take longer in cloud environments
+export const HEALTH_CHECK_TIMEOUT_SEC = 30; // 30 seconds - for health check operations
+export const QUICK_TIMEOUT_SEC = 60; // 1 minute - for quick operations that should complete fast
 export const SANDBOX_ROOT_DIR = "/home/daytona";
 export const DAYTONA_IMAGE_NAME = "daytonaio/langchain-open-swe:0.1.0";
 export const DAYTONA_SNAPSHOT_NAME = "open-swe-vcpu2-mem4-disk5";
@@ -50,3 +55,4 @@ export const OPEN_SWE_STREAM_MODE = [
   "messages-tuple",
   "custom",
 ];
+
