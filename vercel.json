@@ -1,0 +1,46 @@
+{
+  "version": 2,
+  "name": "open-swe-web",
+  "buildCommand": "yarn build --filter=@open-swe/web",
+  "outputDirectory": "apps/web/.next",
+  "installCommand": "yarn install",
+  "framework": "nextjs",
+  "builds": [
+    {
+      "src": "apps/web/package.json",
+      "use": "@vercel/next",
+      "config": {
+        "distDir": ".next"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "apps/web/$1"
+    }
+  ],
+  "functions": {
+    "apps/web/src/app/api/**/*.ts": {
+      "maxDuration": 30
+    }
+  },
+  "env": {
+    "NEXT_PUBLIC_GITHUB_APP_CLIENT_ID": "@github_app_client_id",
+    "GITHUB_APP_CLIENT_SECRET": "@github_app_client_secret",
+    "GITHUB_APP_REDIRECT_URI": "@github_app_redirect_uri",
+    "GITHUB_APP_NAME": "@github_app_name",
+    "GITHUB_APP_ID": "@github_app_id",
+    "GITHUB_APP_PRIVATE_KEY": "@github_app_private_key",
+    "NEXT_PUBLIC_API_URL": "@next_public_api_url",
+    "LANGGRAPH_API_URL": "@langgraph_api_url",
+    "SECRETS_ENCRYPTION_KEY": "@secrets_encryption_key"
+  },
+  "build": {
+    "env": {
+      "NODE_VERSION": "20"
+    }
+  },
+  "regions": ["iad1"],
+  "crons": []
+}
