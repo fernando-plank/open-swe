@@ -15,7 +15,12 @@
     "format:check": "turbo format:check",
     "lint": "turbo lint",
     "lint:fix": "turbo lint:fix",
-    "test": "turbo test"
+    "test": "turbo test",
+    "deploy:web": "turbo build --filter=@open-swe/web",
+    "deploy:agent": "turbo build --filter=@open-swe/agent",
+    "deploy:all": "turbo build --filter=@open-swe/web --filter=@open-swe/agent",
+    "predeploy": "yarn clean && yarn lint",
+    "postdeploy": "echo 'Deployment build completed successfully'"
   },
   "devDependencies": {
     "turbo": "^2.5.0",
@@ -29,3 +34,4 @@
   },
   "packageManager": "yarn@3.5.1"
 }
+
