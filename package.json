@@ -18,9 +18,9 @@
     "test": "turbo test"
   },
   "devDependencies": {
+    "node-gyp": "^11.2.0",
     "turbo": "^2.5.0",
-    "typescript": "^5",
-    "node-gyp": "^11.2.0"
+    "typescript": "^5"
   },
   "dependencies": {
     "ibm-cloud-sdk-core": "^5.0.0",
