@@ -1,0 +1,143 @@
+services:
+  # LangGraph Server Service
+  - type: web
+    name: open-swe-langgraph
+    runtime: node
+    plan: starter
+    region: oregon
+    buildCommand: yarn install --frozen-lockfile && yarn build
+    startCommand: cd apps/open-swe && yarn start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: LANGCHAIN_PROJECT
+        fromGroup: langchain
+      - key: LANGCHAIN_API_KEY
+        fromGroup: langchain
+      - key: LANGCHAIN_TRACING_V2
+        value: "true"
+      - key: LANGCHAIN_TEST_TRACKING
+        value: "false"
+      - key: ANTHROPIC_API_KEY
+        fromGroup: llm-providers
+      - key: OPENAI_API_KEY
+        fromGroup: llm-providers
+      - key: GOOGLE_API_KEY
+        fromGroup: llm-providers
+      - key: DAYTONA_API_KEY
+        fromGroup: infrastructure
+      - key: FIRECRAWL_API_KEY
+        fromGroup: tools
+      - key: GITHUB_APP_NAME
+        fromGroup: github-app
+      - key: GITHUB_APP_ID
+        fromGroup: github-app
+      - key: GITHUB_APP_PRIVATE_KEY
+        fromGroup: github-app
+      - key: GITHUB_WEBHOOK_SECRET
+        fromGroup: github-app
+      - key: OPEN_SWE_APP_URL
+        value: https://open-swe-web.onrender.com
+      - key: SECRETS_ENCRYPTION_KEY
+        fromGroup: security
+      - key: SKIP_CI_UNTIL_LAST_COMMIT
+        value: "true"
+    disk:
+      name: langgraph-disk
+      mountPath: /opt/render/project/data
+      sizeGB: 1
+
+  # Next.js Web App Service
+  - type: web
+    name: open-swe-web
+    runtime: node
+    plan: starter
+    region: oregon
+    rootDir: apps/web
+    buildCommand: cd ../.. && yarn install --frozen-lockfile && yarn build
+    startCommand: yarn start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: NEXT_PUBLIC_API_URL
+        value: https://open-swe-web.onrender.com/api
+      - key: LANGGRAPH_API_URL
+        value: https://open-swe-langgraph.onrender.com
+      - key: NEXT_PUBLIC_GITHUB_APP_CLIENT_ID
+        fromGroup: github-app
+      - key: GITHUB_APP_CLIENT_SECRET
+        fromGroup: github-app
+      - key: GITHUB_APP_REDIRECT_URI
+        value: https://open-swe-web.onrender.com/api/auth/github/callback
+      - key: GITHUB_APP_NAME
+        fromGroup: github-app
+      - key: GITHUB_APP_ID
+        fromGroup: github-app
+      - key: GITHUB_APP_PRIVATE_KEY
+        fromGroup: github-app
+      - key: SECRETS_ENCRYPTION_KEY
+        fromGroup: security
+
+# Environment Variable Groups
+envVarGroups:
+  - name: langchain
+    envVars:
+      - key: LANGCHAIN_PROJECT
+        value: open-swe-production
+      - key: LANGCHAIN_API_KEY
+        generateValue: true
+      - key: LANGCHAIN_TRACING_V2
+        value: "true"
+      - key: LANGCHAIN_TEST_TRACKING
+        value: "false"
+
+  - name: llm-providers
+    envVars:
+      - key: ANTHROPIC_API_KEY
+        generateValue: true
+      - key: OPENAI_API_KEY
+        generateValue: true
+      - key: GOOGLE_API_KEY
+        generateValue: true
+
+  - name: infrastructure
+    envVars:
+      - key: DAYTONA_API_KEY
+        generateValue: true
+
+  - name: tools
+    envVars:
+      - key: FIRECRAWL_API_KEY
+        generateValue: true
+
+  - name: github-app
+    envVars:
+      - key: GITHUB_APP_NAME
+        value: open-swe
+      - key: GITHUB_APP_ID
+        generateValue: true
+      - key: GITHUB_APP_PRIVATE_KEY
+        generateValue: true
+      - key: GITHUB_WEBHOOK_SECRET
+        generateValue: true
+      - key: NEXT_PUBLIC_GITHUB_APP_CLIENT_ID
+        generateValue: true
+      - key: GITHUB_APP_CLIENT_SECRET
+        generateValue: true
+
+  - name: security
+    envVars:
+      - key: SECRETS_ENCRYPTION_KEY
+        generateValue: true
+
+# Database (if needed in the future)
+databases: []
+
+# Redis (if needed in the future)
+redis: []
