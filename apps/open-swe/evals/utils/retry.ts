@@ -7,7 +7,27 @@ const RETRY_CONFIG = {
   baseDelay: 1000,
   maxDelay: 30000,
   backoffMultiplier: 2,
-  timeoutErrors: ["UND_ERR_HEADERS_TIMEOUT"],
+  timeoutErrors: [
+    "UND_ERR_HEADERS_TIMEOUT",
+    "UND_ERR_CONNECT_TIMEOUT",
+    "UND_ERR_SOCKET",
+    "ECONNRESET",
+    "ECONNREFUSED",
+    "ETIMEDOUT",
+    "EPIPE",
+    "ENOTFOUND",
+  ],
+  connectionErrors: [
+    "peer closed connection",
+    "connection closed",
+    "connection reset",
+    "socket hang up",
+    "network error",
+    "fetch failed",
+    "chunked encoding terminated unexpectedly",
+    "premature close",
+    "aborted",
+  ],
 };
 
 /**
@@ -49,3 +69,4 @@ export async function withRetry<T>(operation: () => Promise<T>): Promise<T> {
 
   throw lastError;
 }
+
