@@ -2,9 +2,9 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "version": 2,
   "name": "open-swe-web",
-  "buildCommand": "yarn build",
+  "buildCommand": "cd ../.. && yarn build",
   "outputDirectory": "apps/web/.next",
-  "installCommand": "yarn install --frozen-lockfile",
+  "installCommand": "cd ../.. && yarn install --frozen-lockfile",
   "framework": "nextjs",
   "rootDirectory": "apps/web",
   "builds": [
@@ -98,4 +98,5 @@
   "ignoreCommand": "git log -1 --pretty=oneline --abbrev-commit | grep -w \"\\[skip ci\\]\" && exit 0 || exit 1",
   "crons": []
 }
+
 
