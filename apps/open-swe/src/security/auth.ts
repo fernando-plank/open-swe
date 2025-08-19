@@ -38,6 +38,22 @@ export const auth = new Auth()
   .authenticate<AuthenticateReturn>(async (request: Request) => {
     const isProd = process.env.NODE_ENV === "production";
 
+    // Allow unauthenticated /health route
+    if (
+      request.method === "GET" &&
+      new URL(request.url).pathname === "/health"
+    ) {
+      return {
+        identity: "healthcheck",
+        permissions: [],
+        is_authenticated: false,
+        display_name: "Health Check",
+        metadata: {
+          installation_name: "n/a",
+        },
+      };
+    }
+
     if (request.method === "OPTIONS") {
       return {
         identity: "anonymous",

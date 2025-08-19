@@ -1,0 +1,56 @@
+# Exclude unnecessary files and directories
+node_modules
+.git
+.github
+.vscode
+.idea
+*.log
+*.tmp
+*.cache
+.DS_Store
+Thumbs.db
+
+# Exclude other apps you don't need
+apps/cli
+apps/web
+apps/docs
+
+# Exclude other packages you don't need
+packages/*/node_modules
+packages/*/__tests__
+packages/*/.gitignore
+packages/*/README.md
+packages/*/jest.config.js
+packages/*/eslint.config.js
+packages/*/.prettierrc
+
+# Exclude test files
+**/__tests__
+**/*.test.ts
+**/*.test.js
+**/*.spec.ts
+**/*.spec.js
+
+# Exclude build artifacts (but keep shared dist)
+**/build
+**/.turbo
+**/.next
+
+# Exclude documentation
+**/README.md
+**/docs
+**/*.md
+
+# Exclude config files you don't need
+**/eslint.config.js
+**/.prettierrc
+**/jest.config.js
+**/.codespellignore
+**/.dockerignore
+
+# Exclude development files
+**/.env*
+**/.env.local
+**/.env.development
+**/.env.test
+**/.env.production

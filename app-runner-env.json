@@ -1,0 +1,37 @@
+{
+  "ImageRepository": {
+    "ImageIdentifier": "916655436522.dkr.ecr.us-east-1.amazonaws.com/open-swe-minimal:latest",
+    "ImageConfiguration": {
+      "Port": "10000",
+      "HealthCheckConfiguration": {
+        "Protocol": "HTTP",
+        "Path": "/health",
+        "Interval": 5,
+        "Timeout": 2,
+        "HealthyThreshold": 1,
+        "UnhealthyThreshold": 5
+      },
+      "RuntimeEnvironmentVariables": {
+        "LANGCHAIN_PROJECT": "default",
+        "LANGCHAIN_API_KEY": "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",
+        "LANGCHAIN_TRACING_V2": "true",
+        "LANGCHAIN_TEST_TRACKING": "false",
+        "ANTHROPIC_API_KEY": "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",
+        "OPENAI_API_KEY": "",
+        "GOOGLE_API_KEY": "",
+        "DAYTONA_API_KEY": "dtn_18ab8733566ccaeaca344154656000b7ef6a670e8f33dc92ec5f785f8ec7cea3",
+        "FIRECRAWL_API_KEY": "fc-3cda66fd074f4e5dba6606f0f742530b",
+        "GITHUB_APP_NAME": "open-swe-fernando",
+        "GITHUB_APP_ID": "1781237",
+        "GITHUB_APP_PRIVATE_KEY": "-----BEGIN RSA PRIVATE KEY-----\nMIIEowIBAAKCAQEA1wEddybskxkWPLQ9HzLtk3Z4DoAVXHZZcnDIA5Ld//dcZzMO\nvNhLkcNVXp7JH6OhTOkoDir3MRQEmfidh6oKKefodi8Px9mniIEEI0KkJNa1FXgd\nyZrK3mMSMur7NPsIf82rDaclpOFLnyuow0TAgc11zy7LK+msNHQ+0lXeXStJiLbN\nu1yJ45rtYuRKI0dBx1riVc9MP9koNuyrXJ5WGKkysVozFDDCUgz+X/iO3k69rbMf\npwRuV80ctMzqR3R5DmMVPjhiQVKE1lSFHFhTcNnoC4xWze/MmXF0R/KZj1kRLfiL\nCKsbvfhY1S7Hm0xBNVV98SPXwjgzXTzyNrY8oQIDAQABAoIBAF7Fhw92gOF2NW8c\no7SU5lQR7Gm327KeGF9xhzjMDD8/8eMrhluHnAfsaj0DEPR5VChqvdVA6yUfBcg4\n5ndeZIyERNuTcwlMz6RD+mbwgRob6kZEZBzxtmrAkM0Q9xorbVuodLXX76f2Bzdq\nL0GjlJei0UM6BSSeI+IbO3XLk/DMzOJOXqhPilTzoOcOq2g7IFa8Dql7mkDiDAi0\nMZk2MmQwzNVR21VsfAZ1X1ofJKeDoSGKrKbrjV2ZL7aiErHZwWKDCXHmJDw8YfM2\n2Yj1SxFVU6xqoBrvrn2ASDNDxqDzuOEV/sQDU2yl/uFJGTqxI++ErbgnM20oy+ls\nCera4OECgYEA9KfatA8aHLVQQUGhwCYp6Cnf3Psu3x5BJzjYIzLjIS/bqVCGuo6/\nCTjvGCYIg3t1X4jLiV+C+xzOhCNsh7xufhciMEs+0nfI+eODDDzvRL2+Ccgsi+ab\n7Z+Vc02Xti3+fizLU2wv4oZ+f37a/ehLS94Pq3aducNPHoFBznNIqOsCgYEA4PlK\nHrfUzNk8gzMzNDdU/0dyUu8zkfTkYnKzGjqI+0BCJiSBpxr2WpHWdQMmSiPAH6Pp\n8Uswu/U/Rotn0SyxuqBwgBfqH4pLPho6fuaCnVn9sZWOVIgMHPZ3ozlYUbiapYlN\n1Hujfx5wCMWhv+HYEHzXZJ7HPMvUOqBb87TsTaMCgYAQjH4VqePZR0Zrc5YOWkaB\nZru2xeLQwsojbgvorZuBdixEkqbaXad8ZzZ9Cq2Ovz4cPTOPUj+Y3sT1WTQRJmTO\n8J+mZqCUOfgFNyd5H3IL003UeY7R08J+W0oPp5L4hrntLPh/5xSCHRjXZOxJOnpF\nYnrq3TYkB5sFdDbQUSn8CwKBgQCK4TmhVuh2AND7STsdy96brHZlviZ+vsfSAm6Q\nDXyMZfGv7C9hgiJ8bLUQDP6xG/q5TY3YmAsgrNf/64UOOuIIjIyGdrzf9ZZXYwej\nWRdenbQf0WxIwKeBpaDbUUY1RJmrAOTb++tFSPvuXlpowrmIDBlHk0D5Rfbgrie1\nfYW2swKBgA3xItUjPS00xhxO8AnTatmcDXddkb1av5DPqTi/s7dReGXx1zsESwEh\n5jmf2qv/J9J+NWJeD4RCj0UgNUWnFIrXuTOhj1StAxR9JFY+bl3NXb03MyrGjClb\nPuWFxmWkS4/iKQUcX0CRwMQM8SnoxKnegYoAyuiOu/WJZOSnl8qF\n-----END RSA PRIVATE KEY-----",
+        "GITHUB_WEBHOOK_SECRET": "e1a25d779db778339f80c56104e27b8761a5cfd09962eb0c3473cbb4269374d7",
+        "SECRETS_ENCRYPTION_KEY": "4602504a1692f73242980143bb7a3c0c98da8c1b36eb0cffd475d5f3efc490c6",
+        "SKIP_CI_UNTIL_LAST_COMMIT": "true"
+      }
+    },
+    "ImageRepositoryType": "ECR"
+  },
+  "AuthenticationConfiguration": {
+    "AccessRoleArn": "arn:aws:iam::916655436522:role/service-role/AppRunnerECRAccessRole"
+  }
+}

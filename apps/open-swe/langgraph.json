@@ -5,6 +5,7 @@
     "planner": "./src/graphs/planner/index.ts:graph",
     "manager": "./src/graphs/manager/index.ts:graph"
   },  
+  "env": "../../.env",
   "dependencies": ["./"],
   "auth": {
     "path": "./src/security/auth.ts:auth"

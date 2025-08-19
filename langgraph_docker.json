@@ -4,8 +4,7 @@
     "programmer": "./apps/open-swe/src/graphs/programmer/index.ts:graph",
     "planner": "./apps/open-swe/src/graphs/planner/index.ts:graph",
     "manager": "./apps/open-swe/src/graphs/manager/index.ts:graph"
-  },
-  "env": "./.env",
+  },  
   "dependencies": ["./apps/open-swe"],
   "auth": {
     "path": "./apps/open-swe/src/security/auth.ts:auth"

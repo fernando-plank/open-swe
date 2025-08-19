@@ -1,0 +1,56 @@
+# Ultra-minimal Dockerfile for AWS free tier
+FROM node:22-alpine AS base
+
+WORKDIR /app
+
+# Install only essential dependencies
+RUN apk add --no-cache curl
+
+# Use Yarn 3.5.1 via Corepack
+ENV YARN_NODE_LINKER=node-modules
+RUN corepack enable && corepack prepare yarn@3.5.1 --activate
+
+# Copy only essential files for dependencies
+COPY package.json yarn.lock ./
+COPY apps/open-swe/package.json apps/open-swe/package.json
+COPY packages/shared/package.json packages/shared/package.json
+
+# Install only production dependencies (no dev deps)
+RUN yarn install --mode=skip-build --immutable
+
+# Copy only the packages you need
+COPY apps/open-swe/src apps/open-swe/src
+COPY packages/shared/dist packages/shared/dist
+
+# Create minimal langgraph.json
+RUN echo '{"node_version": "20", "graphs": {"programmer": "./src/graphs/programmer/index.ts:graph", "planner": "./src/graphs/planner/index.ts:graph", "manager": "./src/graphs/manager/index.ts:graph"}, "dependencies": ["./"], "http": {"app": "./src/routes/minimal-app.ts:app"}}' > apps/open-swe/langgraph.json
+
+# Create minimal HTTP app
+RUN echo 'import { Hono } from "hono"; export const app = new Hono(); app.get("/health", (c) => c.json({ status: "healthy", timestamp: new Date().toISOString(), version: "1.0.0" })); app.get("/", (c) => c.json({ message: "Open SWE API", studioUrl: "https://smith.langchain.com/studio?baseUrl=http://127.0.0.1:10000", health: "/health" }));' > apps/open-swe/src/routes/minimal-app.ts
+
+# Production stage - ultra minimal
+FROM node:22-alpine AS production
+
+WORKDIR /app
+
+# Install only curl for health checks
+RUN apk add --no-cache curl
+
+# Use Yarn 3.5.1 via Corepack
+ENV YARN_NODE_LINKER=node-modules
+RUN corepack enable && corepack prepare yarn@3.5.1 --activate
+
+# Copy only necessary files from base
+COPY --from=base /app/node_modules ./node_modules
+COPY --from=base /app/apps/open-swe ./apps/open-swe
+COPY --from=base /app/packages/shared ./packages/shared
+
+# Expose port
+EXPOSE 10000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:10000/health || exit 1
+
+# Run the application
+CMD ["npx", "langgraphjs", "dev", "--host", "0.0.0.0", "--port", "10000", "--config", "apps/open-swe/langgraph.json", "--no-browser"]

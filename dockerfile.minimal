@@ -1,0 +1,39 @@
+# Minimal production Dockerfile for AWS free tier
+FROM node:22-alpine
+
+WORKDIR /app
+
+# Install only curl for health checks
+RUN apk add --no-cache curl
+
+# Use Yarn 3.5.1 via Corepack
+ENV YARN_NODE_LINKER=node-modules
+RUN corepack enable && corepack prepare yarn@3.5.1 --activate
+
+# Copy only essential files for dependencies
+COPY package.json yarn.lock turbo.json ./
+COPY apps/open-swe/package.json apps/open-swe/package.json
+COPY packages/shared/package.json packages/shared/package.json
+
+# Install all dependencies (including dev dependencies for build)
+RUN yarn install && yarn add react react-dom
+
+# Copy only the packages you need
+COPY apps/open-swe/src apps/open-swe/src
+COPY apps/open-swe/langgraph.json apps/open-swe/langgraph.json
+COPY packages/shared/src packages/shared/src
+COPY packages/shared/dist packages/shared/dist
+COPY langgraph_docker.json ./langgraph.json
+
+# Copy only essential config files
+COPY tsconfig.json ./
+
+# Expose port
+EXPOSE 10000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:10000/health || exit 1
+
+# Run the application
+CMD ["./node_modules/.bin/langgraphjs", "dev", "--host", "0.0.0.0", "--port", "10000", "--config", "langgraph.json", "--no-browser"]
