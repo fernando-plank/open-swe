@@ -2,6 +2,18 @@ import { NextRequest, NextResponse } from "next/server";
 import { getInstallationToken } from "@open-swe/shared/github/auth";
 import { GITHUB_INSTALLATION_ID_COOKIE } from "@open-swe/shared/constants";
 
+const formatPrivateKey = (privateKey: string): string => {
+  // Handle escaped backslashes (common in App Runner/ECS)
+  if (privateKey.includes('\\')) {
+    return privateKey.replace(/\\/g, '\n');
+  }
+  // Handle escaped newlines from environment variables
+  if (privateKey.includes('\\n')) {
+    return privateKey.replace(/\\n/g, '\n');
+  }
+  return privateKey;
+};
+
 /**
  * Returns a GitHub installation token that can be used for Git operations
  * This endpoint is intended for internal use by the AI coding agent
@@ -25,10 +37,9 @@ export async function GET(request: NextRequest) {
 
     // Get GitHub App credentials from environment variables
     const appId = process.env.GITHUB_APP_ID;
-    const privateKey = process.env.GITHUB_APP_PRIVATE_KEY?.replace(
-      /\\n/g,
-      "\n",
-    );
+    const privateKey = process.env.GITHUB_APP_PRIVATE_KEY
+      ? formatPrivateKey(process.env.GITHUB_APP_PRIVATE_KEY)
+      : undefined;
 
     if (!appId || !privateKey) {
       return NextResponse.json(

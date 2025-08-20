@@ -68,12 +68,19 @@ export const { GET, POST, PUT, PATCH, DELETE, OPTIONS, runtime } =
         getGitHubInstallationTokenOrThrow(installationIdCookie, encryptionKey),
         getInstallationNameFromReq(req.clone(), installationIdCookie),
       ]);
-
-      return {
+      
+      const headers: Record<string, string> = {
         [GITHUB_TOKEN_COOKIE]: getGitHubAccessTokenOrThrow(req, encryptionKey),
         [GITHUB_INSTALLATION_TOKEN_COOKIE]: installationToken,
         [GITHUB_INSTALLATION_NAME]: installationName,
         [GITHUB_INSTALLATION_ID]: installationIdCookie,
       };
+
+      // Remove accept-encoding to prevent compression issues
+      if (req.headers.has("accept-encoding")) {
+        headers["accept-encoding"] = "identity";
+      }
+
+      return headers;
     },
   });

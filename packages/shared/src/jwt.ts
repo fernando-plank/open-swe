@@ -12,5 +12,24 @@ export function generateJWT(appId: string, privateKey: string): string {
     iss: appId,
   };
 
-  return jsonwebtoken.sign(payload, privateKey, { algorithm: "RS256" });
+  // Handle different private key formats from environment variables
+  let formattedKey = privateKey;
+  
+  // Handle escaped backslashes (common in App Runner/ECS)
+  if (privateKey.includes('\\')) {
+    formattedKey = privateKey.replace(/\\/g, '\n');
+  }
+  // Handle escaped newlines from environment variables
+  else if (privateKey.includes('\\n')) {
+    formattedKey = privateKey.replace(/\\n/g, '\n');
+  }
+
+  console.log("formattedKey", formattedKey);
+  
+  // Ensure the key starts with the proper header
+  if (!formattedKey.includes('-----BEGIN RSA PRIVATE KEY-----')) {
+    throw new Error('Invalid RSA private key format');
+  }
+  
+  return jsonwebtoken.sign(payload, formattedKey, { algorithm: "RS256" });
 }

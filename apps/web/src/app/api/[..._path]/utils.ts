@@ -4,6 +4,18 @@ import { GITHUB_TOKEN_COOKIE } from "@open-swe/shared/constants";
 import { encryptSecret } from "@open-swe/shared/crypto";
 import { NextRequest } from "next/server";
 
+const formatPrivateKey = (privateKey: string): string => {
+  // Handle escaped backslashes (common in App Runner/ECS)
+  if (privateKey.includes('\\')) {
+    return privateKey.replace(/\\/g, '\n');
+  }
+  // Handle escaped newlines from environment variables
+  if (privateKey.includes('\\n')) {
+    return privateKey.replace(/\\n/g, '\n');
+  }
+  return privateKey;
+};
+
 export function getGitHubAccessTokenOrThrow(
   req: NextRequest,
   encryptionKey: string,
@@ -44,7 +56,7 @@ async function getInstallationName(installationId: string) {
   }
   const app = new App({
     appId: process.env.GITHUB_APP_ID,
-    privateKey: process.env.GITHUB_APP_PRIVATE_KEY,
+    privateKey: formatPrivateKey(process.env.GITHUB_APP_PRIVATE_KEY),
   });
 
   // Get installation details

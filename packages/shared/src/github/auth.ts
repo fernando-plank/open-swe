@@ -1,7 +1,16 @@
 import { generateJWT } from "../jwt.js";
 
-const convertEscapedNewlinesToNewlines = (str: string) =>
-  str.replace(/\\n/g, "\n");
+const formatPrivateKey = (privateKey: string): string => {
+  // Handle escaped backslashes (common in App Runner/ECS)
+  if (privateKey.includes('\\')) {
+    return privateKey.replace(/\\/g, '\n');
+  }
+  // Handle escaped newlines from environment variables
+  if (privateKey.includes('\\n')) {
+    return privateKey.replace(/\\n/g, '\n');
+  }
+  return privateKey;
+};
 
 /**
  * Gets an installation access token for a GitHub App installation
@@ -13,7 +22,7 @@ export async function getInstallationToken(
 ): Promise<string> {
   const jwtToken = generateJWT(
     appId,
-    convertEscapedNewlinesToNewlines(privateKey),
+    formatPrivateKey(privateKey),
   );
 
   const response = await fetch(
