@@ -22,13 +22,37 @@ CREATE TABLE threads (
 );
 ```
 
-## 2. `graph_state` Table
+## 2. `runs` Table
 
-This table stores the `GraphState` for each thread.
+This table stores information about each run within a thread.
 
 **Columns:**
 
--   `thread_id` (VARCHAR(255), PRIMARY KEY, FOREIGN KEY REFERENCES threads(thread_id)): The ID of the thread this state belongs to.
+-   `run_id` (VARCHAR(255), PRIMARY KEY): Unique identifier for the run.
+-   `thread_id` (VARCHAR(255), FOREIGN KEY REFERENCES threads(thread_id)): The ID of the thread this run belongs to.
+-   `status` (VARCHAR(255)): The status of the run (e.g., "running", "completed", "failed").
+-   `created_at` (TIMESTAMP, DEFAULT CURRENT_TIMESTAMP): Timestamp of when the run was created.
+-   `updated_at` (TIMESTAMP, DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP): Timestamp of the last update.
+
+**SQL Definition:**
+
+```sql
+CREATE TABLE runs (
+    run_id VARCHAR(255) PRIMARY KEY,
+    thread_id VARCHAR(255) REFERENCES threads(thread_id),
+    status VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+## 3. `graph_state` Table
+
+This table stores the `GraphState` for each run.
+
+**Columns:**
+
+-   `run_id` (VARCHAR(255), PRIMARY KEY, FOREIGN KEY REFERENCES runs(run_id)): The ID of the run this state belongs to.
 -   `messages` (JSONB): Stores the `BaseMessage[]` array.
 -   `tasks` (JSONB): Stores the `Task[]` array.
 -   `plan_revisions` (JSONB): Stores the `PlanRevision[]` array.
@@ -47,7 +71,7 @@ This table stores the `GraphState` for each thread.
 
 ```sql
 CREATE TABLE graph_state (
-    thread_id VARCHAR(255) PRIMARY KEY REFERENCES threads(thread_id),
+    run_id VARCHAR(255) PRIMARY KEY REFERENCES runs(run_id),
     messages JSONB,
     tasks JSONB,
     plan_revisions JSONB,
@@ -64,13 +88,13 @@ CREATE TABLE graph_state (
 );
 ```
 
-## 3. `graph_config` Table
+## 4. `graph_config` Table
 
-This table stores the `GraphConfig` for each thread.
+This table stores the `GraphConfig` for each run.
 
 **Columns:**
 
--   `thread_id` (VARCHAR(255), PRIMARY KEY, FOREIGN KEY REFERENCES threads(thread_id)): The ID of the thread this config belongs to.
+-   `run_id` (VARCHAR(255), PRIMARY KEY, FOREIGN KEY REFERENCES runs(run_id)): The ID of the run this config belongs to.
 -   `configurable` (JSONB): Stores the main configuration object.
 -   `created_at` (TIMESTAMP, DEFAULT CURRENT_TIMESTAMP)
 -   `updated_at` (TIMESTAMP, DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP)
@@ -79,20 +103,20 @@ This table stores the `GraphConfig` for each thread.
 
 ```sql
 CREATE TABLE graph_config (
-    thread_id VARCHAR(255) PRIMARY KEY REFERENCES threads(thread_id),
+    run_id VARCHAR(255) PRIMARY KEY REFERENCES runs(run_id),
     configurable JSONB,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
 
-## 4. `document_cache` Table
+## 5. `document_cache` Table
 
 This table will replace the in-memory `documentCache`.
 
 **Columns:**
 
--   `thread_id` (VARCHAR(255), FOREIGN KEY REFERENCES threads(thread_id)): The ID of the thread this cache entry belongs to.
+-   `run_id` (VARCHAR(255), FOREIGN KEY REFERENCES runs(run_id)): The ID of the run this cache entry belongs to.
 -   `url` (TEXT, PRIMARY KEY): The URL of the cached document.
 -   `content` (TEXT): The content of the document.
 -   `created_at` (TIMESTAMP, DEFAULT CURRENT_TIMESTAMP)
@@ -101,4 +125,10 @@ This table will replace the in-memory `documentCache`.
 
 ```sql
 CREATE TABLE document_cache (
-    thread_id VARCHAR(255) REFERENCES threads(thread_id),
+    run_id VARCHAR(255) REFERENCES runs(run_id),
+    url TEXT,
+    content TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (run_id, url)
+);
+```
