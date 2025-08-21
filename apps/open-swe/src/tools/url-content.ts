@@ -2,21 +2,21 @@ import { tool } from "@langchain/core/tools";
 import { createLogger, LogLevel } from "../utils/logger.js";
 import { createGetURLContentToolFields } from "@open-swe/shared/open-swe/tools";
 import { FireCrawlLoader } from "@langchain/community/document_loaders/web/firecrawl";
-import { GraphState } from "@open-swe/shared/open-swe/types";
 import { parseUrl } from "../utils/url-parser.js";
+import {
+  getDocumentFromCache,
+  saveDocumentToCache,
+} from "../utils/http-db-client.js";
 
 const logger = createLogger(LogLevel.INFO, "GetURLContentTool");
 
-export function createGetURLContentTool(
-  state: Pick<GraphState, "documentCache">,
-) {
+export function createGetURLContentTool(threadId: string) {
   const getURLContentTool = tool(
     async (
       input,
     ): Promise<{
       result: string;
       status: "success" | "error";
-      stateUpdates?: Partial<Pick<GraphState, "documentCache">>;
     }> => {
       const { url } = input;
 
@@ -27,7 +27,7 @@ export function createGetURLContentTool(
       const parsedUrl = urlParseResult.url?.href;
 
       try {
-        let documentContent = state.documentCache[parsedUrl];
+        let documentContent = await getDocumentFromCache(threadId, parsedUrl);
 
         if (!documentContent) {
           logger.info("Document not cached, fetching via FireCrawl", {
@@ -44,15 +44,7 @@ export function createGetURLContentTool(
           const docs = await loader.load();
           documentContent = docs.map((doc) => doc.pageContent).join("\n\n");
 
-          if (state.documentCache) {
-            const stateUpdates = {
-              documentCache: {
-                ...state.documentCache,
-                [parsedUrl]: documentContent,
-              },
-            };
-            return { result: documentContent, status: "success", stateUpdates };
-          }
+          await saveDocumentToCache(threadId, parsedUrl, documentContent);
         } else {
           logger.info("Using cached document content", {
             url: parsedUrl,
