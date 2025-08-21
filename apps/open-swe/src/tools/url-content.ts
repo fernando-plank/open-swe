@@ -10,7 +10,7 @@ import {
 
 const logger = createLogger(LogLevel.INFO, "GetURLContentTool");
 
-export function createGetURLContentTool(threadId: string) {
+export function createGetURLContentTool(runId: string) {
   const getURLContentTool = tool(
     async (
       input,
@@ -27,7 +27,7 @@ export function createGetURLContentTool(threadId: string) {
       const parsedUrl = urlParseResult.url?.href;
 
       try {
-        let documentContent = await getDocumentFromCache(threadId, parsedUrl);
+        let documentContent = await getDocumentFromCache(runId, parsedUrl);
 
         if (!documentContent) {
           logger.info("Document not cached, fetching via FireCrawl", {
@@ -44,7 +44,7 @@ export function createGetURLContentTool(threadId: string) {
           const docs = await loader.load();
           documentContent = docs.map((doc) => doc.pageContent).join("\n\n");
 
-          await saveDocumentToCache(threadId, parsedUrl, documentContent);
+          await saveDocumentToCache(runId, parsedUrl, documentContent);
         } else {
           logger.info("Using cached document content", {
             url: parsedUrl,
