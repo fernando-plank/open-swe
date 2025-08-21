@@ -43,11 +43,10 @@ function simpleHash(str: string): number {
 }
 
 // Helper function to safely extract thread_id and run_id from LangGraph config
-function getThreadAndRunIds(): { thread_id?: string; run_id?: string } {
+function getThreadAndRunIds(): { run_id?: string } {
   try {
     const config = getConfig();
     return {
-      thread_id: config.configurable?.thread_id,
       run_id: config.configurable?.run_id,
     };
   } catch {
