@@ -21,44 +21,58 @@ async function makeRequest(url: string, method: string, body?: unknown) {
   return response.json();
 }
 
-// GraphState functions
-export async function saveGraphState(
-  threadId: string,
-  state: GraphState,
-): Promise<void> {
-  await makeRequest(`${API_BASE_URL}/graph-state`, "POST", { threadId, state });
+// Thread functions
+export async function createThread(threadId: string): Promise<{ thread_id: string }> {
+  return makeRequest(`${API_BASE_URL}/threads`, "POST", { thread_id: threadId });
 }
 
-export async function getGraphState(threadId: string): Promise<GraphState> {
-  return makeRequest(`${API_BASE_URL}/graph-state?threadId=${threadId}`, "GET");
+// Run functions
+export async function createRun(threadId: string, runId: string): Promise<{ run_id: string }> {
+  return makeRequest(`${API_BASE_URL}/runs`, "POST", { thread_id: threadId, run_id: runId });
+}
+
+export async function updateRunStatus(runId: string, status: string): Promise<void> {
+  await makeRequest(`${API_BASE_URL}/runs/${runId}`, "PUT", { status });
+}
+
+// GraphState functions
+export async function saveGraphState(
+  runId: string,
+  state: GraphState,
+): Promise<void> {
+  await makeRequest(`${API_BASE_URL}/graph-state`, "POST", { runId, state });
+}
+
+export async function getGraphState(runId: string): Promise<GraphState> {
+  return makeRequest(`${API_BASE_URL}/graph-state?runId=${runId}`, "GET");
 }
 
 // GraphConfig functions
 export async function saveGraphConfig(
-  threadId: string,
+  runId: string,
   config: GraphConfig,
 ): Promise<void> {
   await makeRequest(`${API_BASE_URL}/graph-config`, "POST", {
-    threadId,
+    runId,
     config,
   });
 }
 
-export async function getGraphConfig(threadId: string): Promise<GraphConfig> {
+export async function getGraphConfig(runId: string): Promise<GraphConfig> {
   return makeRequest(
-    `${API_BASE_URL}/graph-config?threadId=${threadId}`,
+    `${API_BASE_URL}/graph-config?runId=${runId}`,
     "GET",
   );
 }
 
 // DocumentCache functions
 export async function getDocumentFromCache(
-  threadId: string,
+  runId: string,
   url: string,
 ): Promise<string | null> {
   try {
     const result = await makeRequest(
-      `${API_BASE_URL}/document-cache?threadId=${threadId}&url=${encodeURIComponent(
+      `${API_BASE_URL}/document-cache?runId=${runId}&url=${encodeURIComponent(
         url,
       )}`,
       "GET",
@@ -71,18 +85,17 @@ export async function getDocumentFromCache(
 }
 
 export async function saveDocumentToCache(
-  threadId: string,
+  runId: string,
   url: string,
   content: string,
 ): Promise<void> {
   await makeRequest(`${API_BASE_URL}/document-cache`, "POST", {
-    threadId,
+    runId,
     url,
     content,
   });
 }
 
-export async function clearDocumentCache(threadId: string): Promise<void> {
-  await makeRequest(`${API_BASE_URL}/document-cache`, "DELETE", { threadId });
+export async function clearDocumentCache(runId: string): Promise<void> {
+  await makeRequest(`${API_BASE_URL}/document-cache`, "DELETE", { runId });
 }
-
