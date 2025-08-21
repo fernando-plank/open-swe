@@ -57,7 +57,7 @@ export async function takeActions(
   const shellTool = createShellTool(state, config);
   const searchTool = createGrepTool(state, config);
   const scratchpadTool = createScratchpadTool("");
-  const getURLContentTool = createGetURLContentTool(state);
+  const getURLContentTool = createGetURLContentTool(config.thread_id);
   const searchDocumentForTool = createSearchDocumentForTool(state, config);
   const mcpTools = await getMcpTools(config);
 
@@ -76,130 +76,78 @@ export async function takeActions(
     searchDocumentForTool,
     ...mcpTools,
   ];
-  const toolsMap = Object.fromEntries(
-    allTools.map((tool) => [tool.name, tool]),
+
+  const sandbox = await getSandboxWithErrorHandling(config);
+  const toolCallResultsWithUpdates = await Promise.all(
+    lastMessage.tool_calls.map(async (toolCall) => {
+      const tool = allTools.find((t) => t.name === toolCall.name);
+      if (!tool) {
+        return new ToolMessage({
+          tool_call_id: toolCall.id,
+          content: `Tool ${toolCall.name} not found.`,
+        });
+      }
+      try {
+        const toolOutput = await tool.invoke(toolCall.args, {
+          ...config,
+          runId: uuidv4(),
+          threadId: config.thread_id,
+          ...(sandbox && {
+            sandbox,
+          }),
+        });
+
+        const processedContent = processToolCallContent(
+          toolOutput,
+          higherContextLimitToolNames.includes(toolCall.name),
+        );
+
+        return new ToolMessage({
+          tool_call_id: toolCall.id,
+          content: processedContent.result,
+          ...("stateUpdates" in processedContent && {
+            stateUpdates: processedContent.stateUpdates,
+          }),
+        });
+      } catch (e) {
+        const error = e as Error;
+        logger.error("Error invoking tool", {
+          toolName: toolCall.name,
+          toolArgs: toolCall.args,
+          error: error.message,
+        });
+        return new ToolMessage({
+          tool_call_id: toolCall.id,
+          content: safeBadArgsError(error, tool.schema, toolCall.args),
+          name: toolCall.name,
+        });
+      }
+    }),
   );
 
-  const toolCalls = lastMessage.tool_calls;
-  if (!toolCalls?.length) {
-    throw new Error("No tool calls found.");
-  }
-
-  const { sandbox, codebaseTree, dependenciesInstalled } =
-    await getSandboxWithErrorHandling(
-      state.sandboxSessionId,
-      state.targetRepository,
-      state.branchName,
-      config,
-    );
-
-  const toolCallResultsPromise = toolCalls.map(async (toolCall) => {
-    const tool = toolsMap[toolCall.name];
-    if (!tool) {
-      logger.error(`Unknown tool: ${toolCall.name}`);
-      const toolMessage = new ToolMessage({
-        id: `${DO_NOT_RENDER_ID_PREFIX}${uuidv4()}`,
-        tool_call_id: toolCall.id ?? "",
-        content: `Unknown tool: ${toolCall.name}`,
-        name: toolCall.name,
-        status: "error",
-      });
-
-      return { toolMessage, stateUpdates: undefined };
-    }
-
-    logger.info("Executing planner tool action", {
-      ...toolCall,
-    });
-
-    let result = "";
-    let toolCallStatus: "success" | "error" = "success";
-    try {
-      const toolResult =
-        // @ts-expect-error tool.invoke types are weird here...
-        (await tool.invoke({
-          ...toolCall.args,
-          // Only pass sandbox session ID in sandbox mode, not local mode
-          ...(isLocalMode(config) ? {} : { xSandboxSessionId: sandbox.id }),
-        })) as {
-          result: string;
-          status: "success" | "error";
-        };
-      if (typeof toolResult === "string") {
-        result = toolResult;
-        toolCallStatus = "success";
-      } else {
-        result = toolResult.result;
-        toolCallStatus = toolResult.status;
-      }
-
-      if (!result) {
-        result =
-          toolCallStatus === "success"
-            ? "Tool call returned no result"
-            : "Tool call failed";
-      }
-    } catch (e) {
-      toolCallStatus = "error";
-      if (
-        e instanceof Error &&
-        e.message === "Received tool input did not match expected schema"
-      ) {
-        logger.error("Received tool input did not match expected schema", {
-          toolCall,
-          expectedSchema: safeSchemaToString(tool.schema),
-        });
-        result = safeBadArgsError(tool.schema, toolCall.args, toolCall.name);
-      } else {
-        logger.error("Failed to call tool", {
-          ...(e instanceof Error
-            ? { name: e.name, message: e.message, stack: e.stack }
-            : { error: e }),
-        });
-        const errMessage = e instanceof Error ? e.message : "Unknown error";
-        result = `FAILED TO CALL TOOL: "${toolCall.name}"\n\n${errMessage}`;
-      }
-    }
-
-    const { content, stateUpdates } = await processToolCallContent(
-      toolCall,
-      result,
-      {
-        higherContextLimitToolNames,
-        state,
-        config,
-      },
-    );
-
-    const toolMessage = new ToolMessage({
-      id: uuidv4(),
-      tool_call_id: toolCall.id ?? "",
-      content,
-      name: toolCall.name,
-      status: toolCallStatus,
-    });
-
-    return { toolMessage, stateUpdates };
-  });
-
-  const toolCallResultsWithUpdates = await Promise.all(toolCallResultsPromise);
   let toolCallResults = toolCallResultsWithUpdates.map(
-    (item) => item.toolMessage,
+    ({ stateUpdates, ...rest }) => rest,
   );
 
-  // merging document cache updates from tool calls
-  const allStateUpdates = toolCallResultsWithUpdates
-    .map((item) => item.stateUpdates)
-    .filter(Boolean)
-    .reduce(
-      (acc: { documentCache: Record<string, string> }, update) => {
-        if (update?.documentCache) {
-          acc.documentCache = { ...acc.documentCache, ...update.documentCache };
-        }
-        return acc;
-      },
-      { documentCache: {} } as { documentCache: Record<string, string> },
-    );
+  let codebaseTree: string | undefined;
+  let dependenciesInstalled: boolean | null = null;
+
+  const shellToolCall = lastMessage.tool_calls.find(
+    (tc) => tc.name === "shell",
+  );
+  if (shellToolCall) {
+    const { command } = shellToolCall.args;
+    if (command.includes("ls -R")) {
+      const toolCallResult = toolCallResults.find(
+        (tc) => tc.tool_call_id === shellToolCall.id,
+      );
+      if (toolCallResult) {
+        codebaseTree = toolCallResult.content;
+      }
+    } else if (command.includes("yarn install")) {
+      dependenciesInstalled = true;
+    }
+  }
 
   if (!isLocalMode(config)) {
     const repoPath = isLocalMode(config)
@@ -215,7 +163,6 @@ export async function takeActions(
       );
       await stashAndClearChanges(repoPath, sandbox);
 
-      // Rewrite the tool call contents to include a changed files warning.
       toolCallResults = toolCallResults.map(
         (tc) =>
           new ToolMessage({
@@ -244,18 +191,15 @@ export async function takeActions(
     sandboxSessionId: sandbox.id,
     ...(codebaseTree && { codebaseTree }),
     ...(dependenciesInstalled !== null && { dependenciesInstalled }),
-    ...allStateUpdates,
   };
 
   const maxContextActions = config.configurable?.maxContextActions ?? 75;
   const maxActionsCount = maxContextActions * 2;
-  // Exclude hidden messages, and messages that are not AI messages or tool messages.
   const filteredMessages = filterHiddenMessages([
     ...state.messages,
     ...(commandUpdate.messages ?? []),
   ]).filter((m) => isAIMessage(m) || isToolMessage(m));
   if (filteredMessages.length >= maxActionsCount) {
-    // If we've exceeded the max actions count, we should generate a plan.
     logger.info("Exceeded max actions count, generating plan.", {
       maxActionsCount,
       filteredMessages,
