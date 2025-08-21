@@ -57,7 +57,7 @@ export async function takeActions(
   const shellTool = createShellTool(state, config);
   const searchTool = createGrepTool(state, config);
   const scratchpadTool = createScratchpadTool("");
-  const getURLContentTool = createGetURLContentTool(config.thread_id);
+  const getURLContentTool = createGetURLContentTool(config.run_id);
   const searchDocumentForTool = createSearchDocumentForTool(state, config);
   const mcpTools = await getMcpTools(config);
 
@@ -91,7 +91,7 @@ export async function takeActions(
         const toolOutput = await tool.invoke(toolCall.args, {
           ...config,
           runId: uuidv4(),
-          threadId: config.thread_id,
+          runId: config.run_id,
           ...(sandbox && {
             sandbox,
           }),
