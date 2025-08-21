@@ -383,6 +383,7 @@ export const GraphConfiguration = z.object({
 export type GraphConfig = LangGraphRunnableConfig<
   z.infer<typeof GraphConfiguration> & {
     thread_id: string;
+    run_id: string;
     assistant_id: string;
   }
 >;
