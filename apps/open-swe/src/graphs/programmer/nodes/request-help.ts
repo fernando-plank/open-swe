@@ -55,15 +55,15 @@ export async function requestHelp(
 
   const toolCall = lastMessage.tool_calls[0];
 
-  const threadId = config.configurable?.thread_id;
-  if (!threadId) {
-    throw new Error("Thread ID not found in config");
+  const runId = config.configurable?.run_id;
+  if (!runId) {
+    throw new Error("Run ID not found in config");
   }
 
   const userLogin = config.configurable?.[GITHUB_USER_LOGIN_HEADER];
   const userTag = userLogin ? `@${userLogin} ` : "";
 
-  const runUrl = getOpenSweAppUrl(threadId);
+  const runUrl = getOpenSweAppUrl(runId);
   const commentBody = runUrl
     ? `### 🤖 Open SWE Needs Help
 
